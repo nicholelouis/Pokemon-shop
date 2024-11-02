@@ -1,86 +1,66 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { auth } from './firebase-config.js'; // Asegúrate de que la ruta sea correcta
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyA_cHOAXPKqudRMfwFBLx_gjZ5rVpVvVQA",
-  authDomain: "compra-pokemon-f1b5c.firebaseapp.com",
-  projectId: "compra-pokemon-f1b5c",
-  storageBucket: "compra-pokemon-f1b5c.firebasestorage.app",
-  messagingSenderId: "733220528382",
-  appId: "1:733220528382:web:60dce67684d84dd49e45af",
-  measurementId: "G-DZCCK105E7"
-};
-// Inicializa Firebase y Firestore
-export const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-
-class ConectToFirebase {
-  constructor(collectionName = "usuarios") {
-    this.collectionRef = collection(db, collectionName);
-  }
-
-  // Crear un nuevo documento en Firebase
-  async create(data) {
-    try {
-      const docRef = await addDoc(this.collectionRef, data);
-      console.log("Documento creado con ID:", docRef.id);
-      return docRef.id;
-    } catch (error) {
-      console.error("Error al añadir documento:", error);
-      throw error;
-    }
-  }
-
-  // Leer todos los documentos en la colección
-  async readAll() {
-    try {
-      const querySnapshot = await getDocs(this.collectionRef);
-      const dataList = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      console.log("Documentos obtenidos:", dataList);
-      return dataList;
-    } catch (error) {
-      console.error("Error al obtener documentos:", error);
-      throw error;
-    }
-  }
-
-  // Actualizar un documento en Firebase por su ID
-  async update(id, data) {
-    try {
-      const docRef = doc(db, this.collectionRef.path, id);
-      await updateDoc(docRef, data);
-      console.log("Documento actualizado con ID:", id);
-      return true;
-    } catch (error) {
-      console.error("Error al actualizar documento:", error);
-      throw error;
-    }
-  }
-
-  // Eliminar un documento en Firebase por su ID
-  async delete(id) {
-    try {
-      const docRef = doc(db, this.collectionRef.path, id);
-      await deleteDoc(docRef);
-      console.log("Documento eliminado con ID:", id);
-      return true;
-    } catch (error) {
-      console.error("Error al eliminar documento:", error);
-      throw error;
-    }
+// Función para registrar un nuevo usuario
+async function registerUser (email, password) {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    console.log("Usuario registrado:", user);
+    // Aquí puedes agregar lógica para guardar el usuario en Firestore
+  } catch (error) {
+    console.error("Error al registrar usuario:", error);
+    alert(error.message);
   }
 }
 
-export default ConectToFirebase;
+async function loginUser (email, password) {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    console.log("Usuario logueado:", user);
+    
+    // Redirigir al usuario a la página principal
+    window.location.href = 'pokedex.html'; // Cambia esto a la ruta de tu página principal
+  } catch (error) {
+    console.error("Error al iniciar sesión:", error);
+    alert(error.message);
+  }
+}
+
+// Validar el formulario de registro
+function validateRegister() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("registerPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+
+  // Validaciones básicas
+  if (password !== confirmPassword) {
+    alert("Las contraseñas no coinciden.");
+    return false;
+  }
+
+  // Si las validaciones son correctas, registrar al usuario
+  registerUser (email, password);
+  return false; // Evitar el envío del formulario
+}
+
+// Validar el formulario de login
+function validateLogin() {
+  const email = document.getElementById("loginUsername").value; // Cambia esto si es necesario
+  const password = document.getElementById("loginPassword").value;
+
+  // Validaciones básicas
+  if (!email || !password) {
+    alert("Por favor, completa todos los campos.");
+    return false;
+  }
+
+  // Si las validaciones son correctas, iniciar sesión
+  loginUser (email, password);
+  return false; // Evitar el envío del formulario
+}
+
+// Asignar las funciones de validación a los formularios
+document.getElementById("registerForm").onsubmit = validateRegister;
+document.getElementById("loginForm").onsubmit = validateLogin;
