@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Test</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import {
+          getFirestore,
+          collection,
+          getDocs,
+          addDoc,
+          updateDoc,
+          deleteDoc,
+          doc,
+        } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyA_cHOAXPKqudRMfwFBLx_gjZ5rVpVvVQA",
+          authDomain: "compra-pokemon-f1b5c.firebaseapp.com",
+          projectId: "compra-pokemon-f1b5c",
+          storageBucket: "compra-pokemon-f1b5c.firebasestorage.app",
+          messagingSenderId: "733220528382",
+          appId: "1:733220528382:web:60dce67684d84dd49e45af",
+        };
+
+        // Inicializa Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        class ConectToFirebase {
+          constructor(collectionName = "usuarios") {
+            this.collectionRef = collection(db, collectionName);
+          }
+
+          async create(data) {
+            try {
+              const docRef = await addDoc(this.collectionRef, data);
+              console.log("Documento creado con ID:", docRef.id);
+              return docRef.id;
+            } catch (error) {
+              console.error("Error al añadir documento:", error);
+              throw error;
+            }
+          }
+        }
+
+        // Instancia de la clase
+        const usuariosDB = new ConectToFirebase("usuarios");
+
+        // Función para añadir un usuario
+        async function addUser() {
+          const newUser = {
+            nombre: "Juan Pérez",
+            email: "juan@example.com",
+            edad: 30,
+          };
+
+          try {
+            const userId = await usuariosDB.create(newUser);
+            console.log(`Usuario creado con ID: ${userId}`);
+          } catch (error) {
+            console.error("Error al crear el usuario:", error);
+          }
+        }
+
+        // Llamar a la función para agregar un usuario
+        addUser();
+    </script>
+</head>
+<body>
+    <h1>Firestore Test</h1>
+</body>
+</html>
